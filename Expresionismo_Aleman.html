@@ -1,0 +1,822 @@
+<!DOCTYPE html><html lang="es"><head>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expresionismo Alemán — Trabajo Práctico 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Barlow+Condensed:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0b0c;
+    --film:#050506;
+    --paper:#e9e8e4;
+    --paper-2:#dedcd6;
+    --silver:#c4c3bf;
+    --smoke:#8d8c88;
+    --line-dark:#2a2a2c;
+    --red:oklch(0.52 0.115 30);
+    --red-deep:oklch(0.42 0.10 30);
+    --label-track:0.42em;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#141415;}
+  deck-stage:not(:defined){visibility:hidden;}
+
+  /* ---------- base slide ---------- */
+  .slide{
+    width:100%;height:100%;position:relative;overflow:hidden;
+    font-family:"Barlow",sans-serif;color:var(--ink);
+    background:var(--paper);
+  }
+  .slide.dark{background:var(--film);color:var(--paper);}
+
+  /* ---------- typography ---------- */
+  .display{
+    font-family:"Anton",sans-serif;font-weight:400;
+    text-transform:uppercase;line-height:0.92;
+    transform:scaleX(0.92);transform-origin:left center;
+    letter-spacing:0.005em;
+  }
+  .headline{
+    font-family:"Anton",sans-serif;text-transform:uppercase;
+    line-height:0.95;letter-spacing:0.01em;transform:scaleX(0.94);transform-origin:left center;
+  }
+  .sec-num{
+    font-family:"Anton",sans-serif;font-weight:400;text-transform:uppercase;
+    line-height:0.8;transform:scaleX(0.92);transform-origin:left center;letter-spacing:0.01em;
+    color:transparent;-webkit-text-stroke:1.5px var(--smoke);-webkit-text-fill-color:transparent;
+    opacity:0.55;
+  }
+  .label{
+    font-family:"Barlow",sans-serif;font-weight:600;text-transform:uppercase;
+    letter-spacing:var(--label-track);font-size:22px;
+  }
+  .kicker{
+    font-family:"Barlow Condensed",sans-serif;font-weight:600;
+    text-transform:uppercase;letter-spacing:0.32em;font-size:24px;color:var(--smoke);
+    margin:0;
+  }
+  .body{font-size:30px;line-height:1.5;font-weight:400;max-width:24ch;}
+  .body.wide{max-width:34ch;}
+  .red{color:var(--red);}
+  .rule{height:2px;background:var(--ink);border:0;width:84px;margin:0;}
+  .rule.red{background:var(--red);}
+
+  /* ---------- film strip perforations ---------- */
+  .filmstrip{background:var(--film);position:relative;}
+  .perf{display:none;}
+
+  /* image slot defaults */
+  image-slot{display:block;background:
+      repeating-linear-gradient(45deg,#1b1b1d 0 14px,#202023 14px 28px);
+    --slot-fg:var(--smoke);}
+  /* once an image is dropped, the contained image sits flush on the dark film
+     column — no striped placeholder showing as "padding" around it. */
+  image-slot[data-filled]{background:var(--paper);}
+
+  .pagenum{
+    position:absolute;bottom:46px;right:60px;font-family:"Barlow Condensed",sans-serif;
+    font-weight:600;font-size:24px;letter-spacing:0.2em;color:var(--smoke);
+  }
+  .slide.dark .pagenum{color:var(--smoke);}
+  .corner-tag{position:absolute;top:44px;left:60px;}
+  .placeholder-note{
+    font-family:"Barlow",monospace;font-size:13px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--smoke);
+  }
+
+  /* ---------- section header block ---------- */
+  .sec-head{margin-bottom:8px;}
+  .sec-head .kicker{margin-bottom:18px;}
+
+  /* ---------- triptych (3 films) ---------- */
+  .tri{display:grid;grid-template-columns:repeat(3,1fr);}
+  .tri .col{padding:0 46px;border-right:1px solid var(--silver);}
+  .tri .col:first-child{padding-left:0;}
+  .tri .col:last-child{padding-right:0;border-right:0;}
+  .slide.dark .tri .col{border-right-color:var(--line-dark);}
+  .col-rule{height:2px;width:30px;background:var(--red);margin-bottom:24px;opacity:0.9;}
+  .film-name{
+    font-family:"Anton",sans-serif;text-transform:uppercase;font-size:42px;
+    line-height:0.98;transform:scaleX(0.94);transform-origin:left;display:block;
+  }
+  .film-yr{
+    font-family:"Barlow Condensed",sans-serif;font-weight:600;letter-spacing:0.22em;
+    font-size:20px;color:var(--smoke);display:block;margin-top:12px;text-transform:uppercase;
+  }
+  .col-lead{
+    font-family:"Barlow Condensed",sans-serif;font-weight:600;text-transform:uppercase;
+    letter-spacing:0.12em;font-size:22px;margin:26px 0 14px;color:var(--ink);
+  }
+  .slide.dark .col-lead{color:var(--paper);}
+  .col-body{font-size:23px;line-height:1.52;margin:0;color:#39393b;}
+  .slide.dark .col-body{color:var(--silver);}
+  .col-body + .col-body{margin-top:16px;}
+  .col-body em{font-style:italic;color:inherit;}
+
+  /* imagen al pie de columna: margen mínimo garantizado sobre el texto */
+  .tri .col img{margin-top:clamp(18px,2.5vh,32px);flex-shrink:0;}
+
+  /* ---------- data sidebar (film cards) ---------- */
+  .meta-row{
+    display:flex;gap:20px;padding:17px 0;border-top:1px solid var(--silver);
+    font-family:"Barlow",sans-serif;
+  }
+  .slide.dark .meta-row{border-top-color:var(--line-dark);}
+  .meta-row:last-child{border-bottom:1px solid var(--silver);}
+  .slide.dark .meta-row:last-child{border-bottom-color:var(--line-dark);}
+  .meta-k{
+    font-family:"Barlow Condensed",sans-serif;font-weight:600;text-transform:uppercase;
+    letter-spacing:0.16em;font-size:17px;color:var(--smoke);width:120px;flex:none;padding-top:3px;
+  }
+  .meta-v{font-size:22px;line-height:1.4;font-weight:500;}
+
+  /* ---------- comparison table ---------- */
+  .ctable{width:100%;border-collapse:collapse;font-family:"Barlow",sans-serif;}
+  .ctable th,.ctable td{text-align:left;vertical-align:top;padding:15px 22px;}
+  .ctable thead th{
+    font-family:"Anton",sans-serif;text-transform:uppercase;font-weight:400;
+    font-size:30px;letter-spacing:0.01em;border-bottom:4px solid var(--ink);
+  }
+  .ctable thead th .yt{
+    display:block;font-family:"Barlow Condensed",sans-serif;font-size:16px;
+    letter-spacing:0.2em;color:var(--red);font-weight:600;margin-top:2px;
+  }
+  .ctable tbody td{
+    font-size:20px;line-height:1.38;border-bottom:1px solid var(--silver);color:#39393b;
+  }
+  .ctable .eje{
+    font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.12em;font-size:18px;color:var(--ink);white-space:nowrap;
+  }
+  .ctable tbody tr td:first-child{border-right:1px solid var(--silver);}
+
+  /* ---------- entrance ---------- */
+  @media (prefers-reduced-motion:no-preference){
+    [data-deck-active] .anim{animation:rise .7s cubic-bezier(.2,.7,.2,1) both;}
+    [data-deck-active] .anim-2{animation:rise .7s cubic-bezier(.2,.7,.2,1) .08s both;}
+    [data-deck-active] .anim-3{animation:rise .7s cubic-bezier(.2,.7,.2,1) .16s both;}
+    [data-deck-active] .anim-4{animation:rise .7s cubic-bezier(.2,.7,.2,1) .24s both;}
+    [data-deck-active] .wipe{animation:wipe .8s cubic-bezier(.4,0,.1,1) both;}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:none;}}
+  @keyframes wipe{from{clip-path:inset(0 100% 0 0);}to{clip-path:inset(0 0 0 0);}}
+  [data-deck-active] .display.anim,[data-deck-active] .headline.anim,[data-deck-active] .sec-num.anim{animation-name:rise-x;}
+  @keyframes rise-x{from{opacity:0;transform:translateY(26px) scaleX(0.92);}to{opacity:1;transform:scaleX(0.92);}}
+  @media print{
+    .anim,.anim-2,.anim-3,.anim-4,.wipe{animation:none !important;opacity:1 !important;clip-path:none !important;transform:none !important;}
+    .display.anim,.headline.anim,.sec-num.anim{transform:scaleX(0.92) !important;}
+  }
+</style>
+</head>
+<body style="">
+<deck-stage width="1920" height="1080" style="--deck-rail-w: 188px;">
+
+  <!-- ============ 1 · PORTADA ============ -->
+  <section data-label="Portada">
+    <div class="slide dark" style="display:flex;flex-direction:column;">
+      <div class="perf"></div>
+      <div class="filmstrip" style="flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:78px 110px 66px;">
+        <image-slot id="title-bg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.42;" fit="cover" placeholder="Fotograma de portada (Nosferatu / M)"></image-slot>
+        <div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(5,5,6,.95) 30%,rgba(5,5,6,.55) 70%,rgba(5,5,6,.80));"></div>
+        <div style="position:relative;">
+          <p class="kicker anim" style="color:var(--silver);margin:0 0 22px;">Cine · República de Weimar</p>
+          <h1 class="display anim" style="font-size:154px;margin:0;color:var(--paper);">Expresionismo<br>Alemán</h1>
+          <p class="label anim-2" style="margin:32px 0 0;color:var(--paper);letter-spacing:0.55em;font-size:26px;">Trabajo Práctico&nbsp;1</p>
+        </div>
+        <div class="anim-3" style="position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:60px;color:var(--paper);">
+          <div>
+            <p class="kicker" style="font-size:18px;color:var(--smoke);margin:0 0 16px;">Integrantes</p>
+            <div style="display:grid;grid-template-columns:auto auto;column-gap:70px;row-gap:13px;font-family:'Barlow',sans-serif;font-weight:600;font-size:25px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">
+              <span>Corradín, Candela</span><span>Sanz, María Victoria</span>
+              <span>Faletti, Martina</span><span>Romero, Maibel</span>
+              <span>Maidana, Luz Nahuel</span><span>Tello, Pilar</span>
+            </div>
+            <p class="placeholder-note" style="margin:26px 0 0;letter-spacing:0.12em;">Historia de las Artes Audiovisuales · Cátedra Rizzi · UNA · 06·06·2026</p>
+          </div>
+          <div style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:29px;letter-spacing:0.04em;line-height:1.5;white-space:nowrap;">
+            <div>Nosferatu <span class="red">1922</span></div>
+            <div>Metrópolis <span class="red">1927</span></div>
+            <div>M, el vampiro <span class="red">1931</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="perf"></div>
+    </div>
+  </section>
+
+  <!-- ============ 2 · SECCIÓN 01 ============ -->
+  <section data-label="01 · Contexto">
+    <div class="slide dark" style="display:flex;flex-direction:column;justify-content:center;padding:0 120px;position:relative;">
+      <div class="perf" style="position:absolute;top:0;left:0;right:0;"></div>
+      <div class="perf" style="position:absolute;bottom:0;left:0;right:0;"></div>
+      <span class="sec-num anim" style="font-size:300px;line-height:0.8;">01</span>
+      <h2 class="headline anim-2" style="font-size:118px;margin:10px 0 0;color:var(--paper);">Contexto histórico</h2>
+      <p class="body wide anim-3" style="color:var(--silver);margin-top:34px;max-width:44ch;">La Alemania de posguerra, la República de Weimar y el clima de crisis que dio forma a un nuevo lenguaje visual.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3 · INTRODUCCIÓN ============ -->
+  <section data-label="Introducción">
+    <div class="slide" style="display:grid;grid-template-columns:1.08fr 0.92fr;">
+      <div style="padding:96px 76px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim">Introducción</p>
+        <h2 class="headline red anim" style="font-size:84px;margin:18px 0 30px;">Un romanticismo<br>trágico</h2>
+        <hr class="rule anim-2">
+        <p class="body anim-2 wide" style="margin-top:32px;">El expresionismo alemán emergió como respuesta a la conmoción colectiva tras la derrota en la Primera Guerra Mundial.</p>
+        <p class="body anim-3 wide" style="margin-top:20px;color:#4a4a4c;font-size:26px;">Estremecida por el Tratado de Versalles, la hiperinflación y la inestabilidad permanente de Weimar, la cultura alemana proyectó su malestar hacia afuera. El cine adoptó un clima opresivo para reflejar la angustia y el absurdo de la existencia.</p>
+      </div>
+      <div class="filmstrip wipe" style="position:relative;">
+        <div class="perf" style="position:absolute;top:0;left:0;right:0;z-index:2;"></div>
+        <image-slot id="s3-img" src="images/slot-s3-img.webp" style="position:absolute;inset:0;width:100%;height:100%;" fit="contain" position="100% 50%" placeholder="Fotograma vertical — calle / sombras de Weimar"></image-slot>
+        <div class="perf" style="position:absolute;bottom:0;left:0;right:0;z-index:2;"></div>
+      </div>
+      <div class="pagenum">03</div>
+    </div>
+  </section>
+
+  <!-- ============ 4 · MARCO TEÓRICO (KRACAUER) ============ -->
+  <section data-label="Kracauer">
+    <div class="slide dark" style="padding:92px 110px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker" style="color:var(--smoke);">Marco teórico · Siegfried Kracauer</p>
+        <h2 class="headline" style="font-size:78px;color:var(--paper);margin:0;max-width:24ch;">Hacer visible la interioridad fracturada</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:80px;margin-top:auto;align-items:end;">
+        <div>
+          <p class="body wide anim-2" style="color:var(--silver);font-size:26px;max-width:40ch;">En <em style="font-style:italic;">De Caligari a Hitler</em>, Kracauer lee el movimiento desde un prisma sociopolítico: las películas operan como un <span class="red">monólogo interior</span> de la mentalidad alemana de posguerra. Buscaban representar la realidad de modo alterado, mediante un «subjetivismo paroxístico».</p>
+          <p class="anim-3" style="font-family:'Barlow';font-size:21px;color:var(--smoke);margin-top:24px;max-width:42ch;line-height:1.5;">Jean Mitry: el decorado pierde su neutralidad y aparece como la «proyección desmesuradamente agrandada» del drama psicológico.</p>
+        </div>
+        <div class="anim-3" style="display:flex;flex-direction:column;gap:18px;">
+          <div style="border:1px solid var(--line-dark);padding:26px 30px;">
+            <span class="film-name" style="font-size:34px;color:var(--paper);">Tiranía</span>
+            <p class="col-body" style="margin-top:10px;">La sumisión a una autoridad ilimitada.</p>
+          </div>
+          <p style="text-align:center;font-family:'Barlow Condensed';letter-spacing:0.3em;color:var(--red);font-size:20px;margin:0;text-transform:uppercase;">la psique oscila entre</p>
+          <div style="border:1px solid var(--line-dark);padding:26px 30px;">
+            <span class="film-name" style="font-size:34px;color:var(--paper);">Caos</span>
+            <p class="col-body" style="margin-top:10px;">La caída en la anarquía de los instintos.</p>
+          </div>
+        </div>
+      </div>
+      <div class="pagenum">04</div>
+    </div>
+  </section>
+
+  <!-- ============ · LO UNHEIMLICH ============ -->
+  
+
+  <!-- ============ 6 · LA EVOLUCIÓN ============ -->
+  <section data-label="Evolución">
+    <div class="slide" style="padding:92px 110px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">La bifurcación del movimiento</p>
+        <h2 class="headline" style="font-size:58px;line-height:1.04;margin:0;max-width:24ch;">Del subjetivismo a la Nueva Objetividad</h2>
+      </div>
+      <p class="anim-2" style="font-family:'Barlow';font-size:25px;line-height:1.5;max-width:78ch;color:#4a4a4c;margin:58px 0 0;">Hacia mediados de los años veinte, el expresionismo puro se bifurca hacia el realismo social o <em style="font-style:italic;">Neue Sachlichkeit</em>: superar el subjetivismo extremo conservando la crítica social y el trasfondo amargo de la posguerra.</p>
+
+      <div class="anim-3" style="margin-top:auto;position:relative;padding:0 2%;">
+        <!-- progression labels (top) -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin-bottom:26px;">
+          <span class="col-lead" style="margin:0;">Horror sobrenatural</span>
+          <span class="col-lead" style="margin:0;">Horror sistémico</span>
+          <span class="col-lead" style="margin:0;">Horror psicológico</span>
+        </div>
+        <!-- line + nodes -->
+        <div style="position:relative;height:1px;background:var(--silver);margin:0 8%;">
+          <span style="position:absolute;left:0;top:-6px;width:1px;height:13px;background:var(--smoke);"></span>
+          <span style="position:absolute;left:50%;top:-6px;width:1px;height:13px;background:var(--smoke);transform:translateX(-50%);"></span>
+          <span style="position:absolute;left:100%;top:-6px;width:1px;height:13px;background:var(--smoke);transform:translateX(-50%);"></span>
+        </div>
+        <!-- films (bottom) -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin-top:24px;">
+          <div><span class="film-name" style="display:inline-block;font-size:38px;">Nosferatu</span><span class="film-yr" style="margin-top:6px;">1922 · mudo</span></div>
+          <div><span class="film-name" style="display:inline-block;font-size:38px;">Metrópolis</span><span class="film-yr" style="margin-top:6px;">1927 · mudo</span></div>
+          <div><span class="film-name" style="display:inline-block;font-size:38px;">M</span><span class="film-yr" style="margin-top:6px;">1931 · sonoro</span></div>
+        </div>
+        <p style="text-align:center;font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:0.28em;font-size:19px;color:var(--smoke);margin:40px 0 0;">Del expresionismo pictórico fundacional &nbsp;→&nbsp; al realismo crítico de la nueva objetividad</p>
+      </div>
+      <div class="pagenum">06</div>
+    </div>
+  </section>
+
+  <!-- ============ 6 · SECCIÓN 02 ============ -->
+  <section data-label="02 · Las películas">
+    <div class="slide dark" style="display:flex;flex-direction:column;justify-content:center;padding:0 120px;position:relative;">
+      <div class="perf" style="position:absolute;top:0;left:0;right:0;"></div>
+      <div class="perf" style="position:absolute;bottom:0;left:0;right:0;"></div>
+      <span class="sec-num anim" style="font-size:300px;line-height:0.8;">02</span>
+      <h2 class="headline anim-2" style="font-size:118px;margin:10px 0 0;color:var(--paper);">Las tres películas</h2>
+      <p class="body wide anim-3" style="color:var(--silver);margin-top:34px;max-width:48ch;">Una línea de evolución que abarca casi una década: del cine mudo al sonoro, del estudio a la calle, del monstruo folclórico al psicópata cotidiano.</p>
+    </div>
+  </section>
+
+  <!-- ============ 7 · NOSFERATU ============ -->
+  <section data-label="Nosferatu">
+    <div class="slide" style="display:grid;grid-template-columns:0.92fr 1.08fr;">
+      <div class="filmstrip wipe" style="position:relative;">
+        <div class="perf" style="position:absolute;top:0;left:0;right:0;z-index:2;"></div>
+        <image-slot id="f-nosferatu" src="images/slot-f-nosferatu.webp" style="position:absolute;inset:0;width:100%;height:100%;" fit="contain" position="0% 50%" placeholder="Nosferatu — sombra de Orlok en la escalera"></image-slot>
+        <div class="perf" style="position:absolute;bottom:0;left:0;right:0;z-index:2;"></div>
+      </div>
+      <div style="padding:78px 76px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim" style="color:var(--smoke);">3.1 · Una sinfonía del horror</p>
+        <h2 class="display anim" style="font-size:88px;margin:12px 0 6px;color:var(--ink);">Nosferatu</h2>
+        <p class="film-yr anim" style="margin:0 0 26px;font-size:22px;">F. W. Murnau · 1922</p>
+        <p class="anim-2" style="font-family:'Barlow';font-size:23px;line-height:1.52;margin:0 0 28px;color:#39393b;max-width:46ch;">Hutter viaja a los Cárpatos para venderle una propiedad al conde Orlok —la enfermedad hecha carne—. Fascinado por Ellen, Orlok llega a Wisborg en un barco infestado de ratas y diezma la ciudad como una plaga. Solo Ellen, sacrificándose, lo retiene hasta el amanecer: la luz del sol lo pulveriza, aunque ella también muere.</p>
+        <div class="anim-3" style="max-width:48ch;">
+          <div class="meta-row"><span class="meta-k">Producción</span><span class="meta-v">Prana-Film · cine mudo</span></div>
+          <div class="meta-row"><span class="meta-k">Origen</span><span class="meta-v">Adaptación no autorizada de <em style="font-style:italic;">Drácula</em> · sobrevivió de milagro a la orden judicial de destruir las copias</span></div>
+          <div class="meta-row"><span class="meta-k">Rasgo</span><span class="meta-v">Atípica: rodada en locaciones reales. La deformación viene de la luz, el encuadre, el maquillaje y la actuación de Max Schreck.</span></div>
+        </div>
+      </div>
+      <div class="pagenum">07</div>
+    </div>
+  </section>
+
+  <!-- ============ 8 · METRÓPOLIS ============ -->
+  <section data-label="Metrópolis">
+    <div class="slide" style="display:grid;grid-template-columns:1.08fr 0.92fr;">
+      <div style="padding:78px 76px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim" style="color:var(--smoke);">3.2 · La ciudad del futuro</p>
+        <h2 class="display anim" style="font-size:88px;margin:12px 0 6px;color:var(--ink);">Metrópolis</h2>
+        <p class="film-yr anim" style="margin:0 0 26px;font-size:22px;">Fritz Lang · 1927</p>
+        <p class="anim-2" style="font-family:'Barlow';font-size:23px;line-height:1.52;margin:0 0 28px;color:#39393b;max-width:46ch;">Dos mundos: arriba, los privilegiados en torres de cristal; abajo, una masa obrera anónima que opera las máquinas. Freder descubre la injusticia cuando irrumpe la obrera María. Su padre encarga un androide con su rostro para desacreditar al movimiento; el robot-María agita a los obreros hasta inundar el nivel subterráneo. Cierra con la reconciliación entre el capital (la Cabeza) y los obreros (la Mano), mediada por el Corazón.</p>
+        <div class="anim-3" style="max-width:48ch;">
+          <div class="meta-row"><span class="meta-k">Producción</span><span class="meta-v">UFA · cine mudo · ciencia ficción</span></div>
+          <div class="meta-row"><span class="meta-k">Guion</span><span class="meta-v">Coescrito por Thea von Harbou</span></div>
+          <div class="meta-row"><span class="meta-k">Escala</span><span class="meta-v">La película más cara del cine alemán hasta entonces: +1 año de rodaje, decenas de miles de extras, la UFA al borde de la quiebra.</span></div>
+        </div>
+      </div>
+      <div class="filmstrip wipe" style="position:relative;">
+        <div class="perf" style="position:absolute;top:0;left:0;right:0;z-index:2;"></div>
+        <image-slot id="f-metropolis" src="images/slot-f-metropolis.webp" style="position:absolute;inset:0;width:100%;height:100%;" fit="contain" position="100% 50%" placeholder="Metrópolis — la ciudad vertical / la sala de máquinas"></image-slot>
+        <div class="perf" style="position:absolute;bottom:0;left:0;right:0;z-index:2;"></div>
+      </div>
+      <div class="pagenum">08</div>
+    </div>
+  </section>
+
+  <!-- ============ 9 · M ============ -->
+  <section data-label="M">
+    <div class="slide" style="display:grid;grid-template-columns:0.92fr 1.08fr;">
+      <div class="filmstrip wipe" style="position:relative;">
+        <div class="perf" style="position:absolute;top:0;left:0;right:0;z-index:2;"></div>
+        <image-slot id="f-m" src="images/slot-f-m.webp" style="position:absolute;inset:0;width:100%;height:100%;" fit="contain" position="0% 50%" placeholder="M — la sombra sobre el cartel «se busca»"></image-slot>
+        <div class="perf" style="position:absolute;bottom:0;left:0;right:0;z-index:2;"></div>
+      </div>
+      <div style="padding:78px 76px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim" style="color:var(--smoke);">3.3 · El vampiro de Düsseldorf</p>
+        <h2 class="display anim" style="font-size:88px;margin:12px 0 6px;color:var(--ink);">M</h2>
+        <p class="film-yr anim" style="margin:0 0 26px;font-size:22px;">Fritz Lang · 1931</p>
+        <p class="anim-2" style="font-family:'Barlow';font-size:23px;line-height:1.52;margin:0 0 28px;color:#39393b;max-width:46ch;">Una ciudad en pánico: un asesino de niños actúa en las sombras y la policía no logra atraparlo. Atosigado por las redadas, el hampa se organiza para juzgarlo por cuenta propia. Un mendigo ciego lo identifica por su silbido y le marcan la espalda con una <span class="red">M</span> de tiza. Capturado, es llevado ante un tribunal informal en un sótano. El film termina antes de la sentencia: ¿quién tiene derecho a juzgar?</p>
+        <div class="anim-3" style="max-width:48ch;">
+          <div class="meta-row"><span class="meta-k">Producción</span><span class="meta-v">Nero-Film · primer gran film sonoro de Lang</span></div>
+          <div class="meta-row"><span class="meta-k">Origen</span><span class="meta-v">Basada libremente en el caso real del asesino Peter Kürten</span></div>
+          <div class="meta-row"><span class="meta-k">Posición</span><span class="meta-v">La «menos expresionista»: fase de transición hacia el realismo y la sobriedad estilística.</span></div>
+        </div>
+      </div>
+      <div class="pagenum">09</div>
+    </div>
+  </section>
+
+  <!-- ============ 10 · SECCIÓN 03 ============ -->
+  <section data-label="03 · Análisis">
+    <div class="slide dark" style="display:flex;flex-direction:column;justify-content:center;padding:0 120px;position:relative;">
+      <div class="perf" style="position:absolute;top:0;left:0;right:0;"></div>
+      <div class="perf" style="position:absolute;bottom:0;left:0;right:0;"></div>
+      <span class="sec-num anim" style="font-size:300px;line-height:0.8;">03</span>
+      <h2 class="headline anim-2" style="font-size:118px;margin:10px 0 0;color:var(--paper);">Análisis</h2>
+      <p class="body wide anim-3" style="color:var(--silver);margin-top:34px;max-width:48ch;">Un núcleo expresionista común, recursos distintos según cada momento histórico y técnico. Recorremos la forma película por película.</p>
+    </div>
+  </section>
+
+  <!-- ============ 11 · SONIDO ============ -->
+  <section data-label="Sonido y leitmotiv">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.1 · El sonido, la palabra y el leitmotiv</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">Del silencio a la escucha</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display: flex; flex-direction: column; height: 700px;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">1922 · muda</span>
+          <p class="col-body" style="margin-top:24px;">Concebida para una orquesta en vivo —partitura original de Hans Erdmann, hoy perdida—. Su horror es fundamentalmente visual: puede sostenerse con alternativas sonoras.</p>
+          <img src="images/p11-nosferatu.png" alt="Nosferatu — orquesta en vivo / partitura muda" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">1927 · muda</span>
+          <p class="col-body" style="margin-top:24px;">La partitura de Gottfried Huppertz: uno de los primeros sistemas completos de <span class="red">leitmotivs</span> del cine —por personaje, espacio y estado—. La marcha obrera, grave y mecánica, contra el tema aéreo del jardín.</p>
+          <img src="images/p11-metropolis.png" alt="Metrópolis — leitmotiv / la marcha obrera" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">1931 · sonora</span>
+          <p class="col-body" style="margin-top:24px;">Un salto cualitativo. El asesino silba <em style="font-style:italic;">En la gruta del rey de la montaña</em>: su presencia se anuncia por el oído, y es un mendigo ciego quien lo identifica por la melodía.</p>
+          <img src="images/p11-m.png" alt="M — el silbido del asesino" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">10</div>
+    </div>
+  </section>
+
+  <!-- ============ 12 · FOTOGRAFÍA ============ -->
+  <section data-label="Fotografía">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.2 · Fotografía</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">Tres maneras de tallar la luz</h2>
+      </div>
+      <div class="tri" style="margin-top:48px;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">Fritz Arno Wagner</span>
+          <p class="col-body" style="margin-top:24px;">Altísimo contraste, iluminación direccional intensa, sombras en escorzo como recurso expresivo. Llamativa por su cantidad de exteriores, muy raros para el género.</p>
+          <img src="images/p12-nosferatu.png" alt="Fotograma de Nosferatu — dos hombres en un interior" style="width: 529px; aspect-ratio: 4/3; object-fit: cover; margin-top: auto; padding-top: 32px; display: block; padding: 0px; margin: 32px 0px 0px; height: 363px">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">De estudio</span>
+          <p class="col-body" style="margin-top:24px;">Fotografía de estudio absoluta: control total de cada fuente de luz y una calidad casi escultórica, de gama tonal rica y matizada. La luz marca la grandiosidad.</p>
+          <img src="images/p12-metropolis-1.png" alt="Fotograma de Metrópolis — el autómata con el rostro de María junto a Rotwang" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; margin-top: auto; padding-top: 32px; display: block; padding: 0px">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">Otra vez Wagner</span>
+          <p class="col-body" style="margin-top:24px;">Paleta sobria, densa, urbana. Grises continuos —ni blancos puros ni negros absolutos— para la ambigüedad moral. El contraste se vuelve <span class="red">excepción calculada</span>.</p>
+          <img src="images/p12-m.png" alt="Fotograma de M — dos hombres en una escalera, claroscuro urbano" style="width:100%;aspect-ratio:4/3;object-fit:cover;margin-top:auto;padding-top:32px;display:block;">
+        </div>
+      </div>
+      <p class="anim-3" style="font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:0.2em;font-size:18px;color:var(--smoke);margin:44px 0 0;">El mismo director de fotografía firma Nosferatu y M con un trabajo transversalmente opuesto.</p>
+      <div class="pagenum">11</div>
+    </div>
+  </section>
+
+  <!-- ============ 13 · LUZ Y SOMBRA (FEATURE) ============ -->
+  <section data-label="Luz y sombra">
+    <div class="slide dark" style="padding:84px 110px;display:flex;flex-direction:column;position:relative;">
+      <div class="sec-head anim">
+        <p class="kicker" style="color:var(--smoke);">4.3 · El hilo conductor</p>
+        <h2 class="headline" style="font-size:84px;margin:0;color:var(--paper);">La sombra como dramaturgia</h2>
+      </div>
+      <p class="anim-2" style="font-family:'Barlow';font-size:26px;color:var(--silver);max-width:60ch;margin:28px 0 0;line-height:1.5;">Si un elemento atraviesa las tres películas, es el tratamiento de la luz y la sombra.</p>
+      <div class="tri" style="margin-top:auto;align-content:end;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Nosferatu</span>
+          <p class="col-body" style="margin-top:22px;">La sombra de Orlok adquiere autonomía física y peso material, una entidad que precede al monstruo. Su silueta subiendo la escalera y la mano cerrándose sobre el pecho de Ellen: la imagen emblemática del movimiento.</p>
+          <img src="images/p13-nosferatu.png" alt="Nosferatu — la sombra de Orlok en la escalera" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Metrópolis</span>
+          <p class="col-body" style="margin-top:22px;">El claroscuro define la estructura de clases: luz difusa arriba, luz dura abajo. La grilla metálica proyecta una cuadrícula disciplinaria sobre los cuerpos. La persecución de María en las catacumbas: acoso y acorralamiento.</p>
+          <img src="images/p13-metropolis.png" alt="Metrópolis — la grilla sobre los cuerpos / persecución en catacumbas" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">M</span>
+          <p class="col-body" style="margin-top:22px;">Iluminación realista; destellos expresionistas frugales y calculados. La sombra del asesino sobre el cartel de «se busca» —heredera de la escalera de Nosferatu— precede al cine negro. En el sótano final, las sombras regresan con toda su fuerza.</p>
+          <img src="images/p13-m.png" alt="M — la sombra sobre el cartel se busca" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">12</div>
+    </div>
+  </section>
+
+  <!-- ============ 14 · ENCUADRE ============ -->
+  <section data-label="Encuadre y composición">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.4 · Encuadre, composición y plano</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">Cada marco, una mirada</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">Lo sublime</span>
+          <p class="col-body" style="margin-top:24px;">Composición pictórica, deudora del romanticismo: figuras pequeñas frente a paisajes inmensos, el cielo aplastando a los personajes. Encuadres en forma de portal —marcos dentro del marco— que subrayan una visión parcial y amenazada.</p>
+          <img src="images/p14-nosferatu.png" alt="Nosferatu — marco dentro del marco" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">Geometría</span>
+          <p class="col-body" style="margin-top:24px;">Monumentalidad geométrica: contrapicados a las torres (sobrehumanas) y picados a las masas (puntos en una cuadrícula). Esa dialéctica visual es el argumento político en términos puramente formales. La simetría domina el poder.</p>
+          <img src="images/p14-metropolis.png" alt="Metrópolis — contrapicado a las torres" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">Lo forense</span>
+          <p class="col-body" style="margin-top:24px;">Encuadres documentales con rigor expresionista. Marcos que encierran (puertas, arcos, rejas): la ciudad como contención. El plano detalle se vuelve forense —la M de tiza, el globo en los cables— y los cenitales muestran la masa-enjambre.</p>
+          <img src="images/p14-m.png" alt="M — encuadre forense / la M de tiza" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">13</div>
+    </div>
+  </section>
+
+  <!-- ============ 15 · CÁMARA Y MONTAJE ============ -->
+  <section data-label="Cámara y montaje">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.5–4.6 · Movimiento de cámara, montaje y tiempo</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">El tiempo del relato</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">Quietud</span>
+          <p class="col-body" style="margin-top:24px;">Cámara estática o muy lenta, como si el horror esperara en la quietud. Montaje hipnótico y contemplativo; los intertítulos funcionan como respiraciones. Su raccord célebre: la mirada telepática entre Orlok y Ellen.</p>
+          <img src="images/p15-nosferatu.png" alt="Nosferatu — la mirada telepática" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">Arsenal</span>
+          <p class="col-body" style="margin-top:24px;">Travellings, grúas para la verticalidad, panorámicas de masas: un observador omnisciente que celebra la escala. El ritmo como herramienta política: el cambio de turno vuelve indistinguibles a la máquina y el cuerpo.</p>
+          <img src="images/p15-metropolis.png" alt="Metrópolis — travelling de masas" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">Hitchcockeano</span>
+          <p class="col-body" style="margin-top:24px;">La cámara más activa: el sonido la libera. Montaje paralelo de cuatro líneas —policía, hampa, asesino, ciudad—. Su recurso revolucionario es el <span class="red">raccord de sonido</span>: el audio de una escena se derrama sobre la siguiente.</p>
+          <img src="images/p15-m.png" alt="M — montaje paralelo / raccord de sonido" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">14</div>
+    </div>
+  </section>
+
+  <!-- ============ 16 · ESCENOGRAFÍA ============ -->
+  <section data-label="Escenografía">
+    <div class="slide dark" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker" style="color:var(--smoke);">4.7 · Escenografía y construcción del espacio</p>
+        <h2 class="headline" style="font-size:70px;margin:0;color:var(--paper);">El estudio y la calle</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Nosferatu</span><span class="film-yr">Exteriores reales</span>
+          <p class="col-body" style="margin-top:24px;">Rompe con el expresionismo de estudio rodando en exteriores y edificios auténticos —en su mayoría góticos—. El horror parece más real por ocurrir en lugares reconocibles.</p>
+          <img src="images/p16-nosferatu.png" alt="Nosferatu — exteriores góticos reales" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Metrópolis</span><span class="film-yr">Estudio total</span>
+          <p class="col-body" style="margin-top:24px;">Monumental, geométrica, futurista: rascacielos en miniatura, escaleras sin fin, salas de máquinas irreales. Efecto Schüfftan y stop-motion. Ni un centímetro de exterior: la <span class="red">clausura es el argumento</span>.</p>
+          <img src="images/p16-metropolis.png" alt="Metrópolis — la ciudad en miniatura" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">M</span><span class="film-yr">Berlín real</span>
+          <p class="col-body" style="margin-top:24px;">Vuelve a la ciudad real: el Berlín de Weimar en su último momento, con callejones, kioscos y portales reconocibles. La única escenografía expresionista es el sótano del tribunal informal.</p>
+          <img src="images/p16-m.png" alt="M — el Berlín de Weimar" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">15</div>
+    </div>
+  </section>
+
+  <!-- ============ 17 · ACTUACIÓN ============ -->
+  <section data-label="Actuación">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.8 · Actuación, gestualidad y el cuerpo</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">Del gesto al silencio interior</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">Max Schreck</span>
+          <p class="col-body" style="margin-top:24px;">En el mudo el cuerpo carga toda la expresión (herencia teatral). Maquillaje exagerado de Orlok, legible desde la distancia: postura de ave rapaz, dedos larguísimos con voluntad propia, palidez de cadáver.</p>
+          <img src="images/p17-nosferatu.png" alt="Max Schreck — postura de ave rapaz" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">Brigitte Helm</span>
+          <p class="col-body" style="margin-top:24px;">Actuación jerárquica: los obreros se mueven como autómatas indistinguibles; los privilegiados tienen dignidad escultórica. La danza del robot-María propone una sexualidad mecánica que imita el deseo humano.</p>
+          <img src="images/p17-metropolis.png" alt="Brigitte Helm — la danza del robot" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">Peter Lorre</span>
+          <p class="col-body" style="margin-top:24px;">Con el sonido, actuación contenida y moderna: ya no hace falta que el cuerpo lo diga todo. Lorre hace a Beckert repugnante y patético a la vez. El maquillaje es normal, el asesino parece común: <span class="red">el horror se interioriza</span>.</p>
+          <img src="images/p17-m.png" alt="Peter Lorre — Beckert acorralado" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">16</div>
+    </div>
+  </section>
+
+  <!-- ============ 18 · EL ESPÍRITU BARROCO (FEATURE) ============ -->
+  <section data-label="El espíritu barroco">
+    <div class="slide dark" style="display:grid;grid-template-columns:1.12fr 0.88fr;">
+      <div style="padding:84px 80px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim" style="color:var(--smoke);">4.9 · Eugenio d'Ors · sobre Nosferatu</p>
+        <h2 class="headline anim" style="font-size:74px;line-height:1.05;margin:14px 0 40px;color:var(--paper);">El espíritu barroco</h2>
+        <p class="anim-2" style="font-family:'Barlow';font-size:24px;line-height:1.5;color:var(--silver);max-width:50ch;margin:0;">D'Ors postula el barroco como una <span class="red">forma transhistórica</span>: un impulso de ruptura contra la estética dominante de cada época. El gótico contra el románico; el barroco contra el renacimiento; el romanticismo contra el clasicismo; el expresionismo contra la estética domesticada de su tiempo.</p>
+        <p class="anim-3" style="font-family:'Barlow';font-size:21px;line-height:1.5;color:var(--smoke);max-width:52ch;margin:26px 0 0;">En Nosferatu: locaciones góticas reales —el castillo de Orlok, arcos ojivales, sillas altísimas—; el propio cuerpo del vampiro replica bóvedas y arcos. La iluminación tenebrista remite a Rembrandt y Vermeer. Rasgos comunes a todo barroco: crisis, claroscuro, distorsión, golpes de efecto, exageración, emoción visceral.</p>
+      </div>
+      <div class="filmstrip wipe" style="position:relative;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:56px 72px 56px 40px;">
+        <img src="images/barroco-arcos.png" alt="Nosferatu en un arco gótico junto a un arco ojival real" style="width:100%;height:auto;display:block;">
+        <img src="images/barroco-anatomia.png" alt="Grabado de una lección de anatomía junto a La lección de anatomía del Dr. Tulp, de Rembrandt" style="width:100%;height:auto;display:block;">
+      </div>
+      <div class="pagenum">17</div>
+    </div>
+  </section>
+
+  <!-- ============ 19 · LA FIGURA DEL MAL ============ -->
+  <section data-label="La figura del mal">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.10 · La figura del mal y el antagonista</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">Tres rostros del monstruo</h2>
+      </div>
+      <div class="tri" style="margin-top:54px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="display" style="font-size:58px;color:var(--red);">01</span>
+          <p class="col-lead">El monstruo folclórico</p>
+          <p class="film-yr" style="margin:0 0 18px;">Nosferatu</p>
+          <p class="col-body">Amenaza sobrenatural y externa, alimentada por el imaginario romántico, sin motivaciones humanas. Encarna lo <em style="font-style:italic;">Unheimlich</em> freudiano: lo familiar e íntimo subvertido. La amenaza se disuelve con el sacrificio —y adulterio— de Ellen.</p>
+          <img src="images/p19-nosferatu.png" alt="Nosferatu — el monstruo folclórico" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="display" style="font-size:58px;color:var(--red);">02</span>
+          <p class="col-lead">El monstruo sistémico</p>
+          <p class="film-yr" style="margin:0 0 18px;">Metrópolis</p>
+          <p class="col-body">No una persona, sino una configuración de poder: la tecnología, el autómata, el tirano que esclaviza a las masas. Escala multitudinaria; difícil de combatir porque no tiene un cuerpo al que apuntar. El poder liquidificado de Bauman.</p>
+          <img src="images/p19-metropolis.png" alt="Metrópolis — el monstruo sistémico" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="display" style="font-size:58px;color:var(--red);">03</span>
+          <p class="col-lead">El monstruo cotidiano</p>
+          <p class="film-yr" style="margin:0 0 18px;">M</p>
+          <p class="col-body">El psicópata que transita desapercibido en la masa urbana. El más perturbador: no es exterior, sino un hombre común habitado por un impulso que no controla. El mal habita la propia psiquis —Beckert, un yo partido en dos—.</p>
+          <img src="images/p19-m.png" alt="M — el monstruo cotidiano" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">18</div>
+    </div>
+  </section>
+
+  <!-- ============ 20 · LA CIUDAD COMO ARGUMENTO ============ -->
+  <section data-label="La ciudad como argumento">
+    <div class="slide" style="padding:60px 96px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker">4.11 · El espacio urbano y la arquitectura como política</p>
+        <h2 class="headline" style="font-size:70px;margin:0;">La ciudad como argumento</h2>
+      </div>
+      <div class="tri" style="margin-top:38px;flex:1;align-content:start;">
+        <div class="col anim" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Nosferatu</span><span class="film-yr">Lo horizontal</span>
+          <p class="col-body" style="margin-top:24px;">Wisborg, la ciudad burguesa amenazada desde afuera: el mal llega de los márgenes del mapa en un barco de comercio. Topografía oceánica donde el peligro viaja, cruza fronteras y contamina el interior doméstico.</p>
+          <img src="images/p20-nosferatu.png" alt="Wisborg — lo horizontal / el barco" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-2" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">Metrópolis</span><span class="film-yr">Lo vertical</span>
+          <p class="col-body" style="margin-top:24px;">Utopía fallida cuya verticalidad materializa la injusticia de clase: ascensores, escaleras y niveles son los mecanismos físicos de la segregación. Una ciudad sin exterior posible es la imagen del sistema total.</p>
+          <img src="images/p20-metropolis.png" alt="Metrópolis — lo vertical / la segregación" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+        <div class="col anim-3" style="display:flex;flex-direction:column;">
+          <div class="col-rule"></div>
+          <span class="film-name">M</span><span class="film-yr">La vigilancia</span>
+          <p class="col-body" style="margin-top:24px;">Una máquina de vigilancia distribuida: cada esquina, un punto de observación; los propios mendigos arman la red más eficaz. La ciudad que no puede atrapar al asesino se organiza como un <span class="red">Estado paralelo</span>.</p>
+          <img src="images/p20-m.png" alt="M — la red de vigilancia" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;">
+        </div>
+      </div>
+      <div class="pagenum">19</div>
+    </div>
+  </section>
+
+  <!-- ============ 21 · LA PREGUNTA ABIERTA ============ -->
+  <section data-label="La pregunta abierta">
+    <div class="slide dark" style="display:flex;flex-direction:column;justify-content:center;padding:0 150px;position:relative;">
+      <div class="perf" style="position:absolute;top:0;left:0;right:0;"></div>
+      <div class="perf" style="position:absolute;bottom:0;left:0;right:0;"></div>
+      <p class="kicker anim" style="color:var(--smoke);margin-bottom:30px;">4.12 · La masa, la culpa y la justicia</p>
+      <blockquote class="headline anim" style="font-size:60px;margin:0;max-width:30ch;color:var(--paper);line-height:1.12;">El Estado es ineficaz; el hampa, eficaz pero ilegal; la sociedad civil que se organiza termina siendo turba.</blockquote>
+      <p class="anim-2" style="font-family:'Barlow';font-size:25px;color:var(--silver);max-width:62ch;margin:80px 0 0;line-height:1.5;">La masa —sujeto revolucionario en otras tradiciones— se muestra aquí también como máquina de linchamiento: la sociedad civil puede convertirse, ella misma, en monstruo.</p>
+      <p class="label anim-2" style="margin-top:34px;color:var(--red);letter-spacing:0.32em;">M, de 1931, deja la pregunta abierta. La historia respondería dos años después.</p>
+      <div class="pagenum">20</div>
+    </div>
+  </section>
+
+  <!-- ============ 22 · CUADRO COMPARATIVO ============ -->
+  <section data-label="Cuadro comparativo">
+    <div class="slide" style="padding:74px 88px;display:flex;flex-direction:column;">
+      <div class="sec-head anim" style="margin-bottom:30px;">
+        <p class="kicker">5 · Resumen</p>
+        <h2 class="headline" style="font-size:62px;margin:0;">Cuadro comparativo</h2>
+      </div>
+      <table class="ctable anim-2">
+        <thead>
+          <tr>
+            <th style="width:130px;border-bottom-color:transparent;"></th>
+            <th>Nosferatu<span class="yt">1922</span></th>
+            <th>Metrópolis<span class="yt">1927</span></th>
+            <th>M<span class="yt">1931</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="eje">Tema</td><td>Terror sobrenatural</td><td>Ciencia ficción</td><td>Crimen / realismo</td></tr>
+          <tr><td class="eje">Sonido</td><td>Muda; intertítulos elocuentes</td><td>Muda; leitmotivs musicales</td><td>Sonora; leitmotiv silbado y fuera de campo</td></tr>
+          <tr><td class="eje">Fotografía</td><td>Contraste alto, orgánica; exteriores</td><td>De estudio, escultórica, limpia</td><td>Sobria, grises continuos, ambigua</td></tr>
+          <tr><td class="eje">Luz / sombra</td><td>La sombra de Orlok en la escalera; tenebrismo barroco</td><td>Grilla arquitectónica que cuadricula a los obreros</td><td>La sombra sobre el cartel «se busca»</td></tr>
+          <tr><td class="eje">Cámara</td><td>Estática</td><td>Travellings, grúas, panorámicas</td><td>Activa, persecutoria</td></tr>
+          <tr><td class="eje">Espacio</td><td>Exteriores reales, arquitectura gótica</td><td>Construcción total de estudio; Schüfftan</td><td>Berlín real; sótano expresionista</td></tr>
+          <tr><td class="eje">Actuación</td><td>Gestual, exagerada, deforme; teatral</td><td>Jerárquica; robot mecánico</td><td>Contenida, psicológica (Lorre)</td></tr>
+          <tr><td class="eje">Antagonista</td><td>Monstruo folclórico</td><td>Mal sistémico, difuso</td><td>Monstruo cotidiano, interior</td></tr>
+        </tbody>
+      </table>
+      <div class="pagenum">21</div>
+    </div>
+  </section>
+
+  <!-- ============ 23 · CONCLUSIÓN ============ -->
+  <section data-label="Conclusión">
+    <div class="slide dark" style="padding:88px 110px;display:flex;flex-direction:column;">
+      <div class="sec-head anim">
+        <p class="kicker" style="color:var(--smoke);">6 · Conclusión</p>
+        <h2 class="headline" style="font-size:56px;line-height:1.06;margin:0;color:var(--paper);max-width:30ch;">Del terror a la política, de la política a la psicología</h2>
+      </div>
+      <div class="tri" style="margin-top:66px;">
+        <div class="col anim">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Nosferatu</span><span class="film-yr">1922</span>
+          <p class="col-body" style="margin-top:22px;">El mal viene de afuera: la otredad, la plaga, la muerte que viaja. La textura orgánica del fílmico expresa un miedo primitivo y premoderno.</p>
+        </div>
+        <div class="col anim-2">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">Metrópolis</span><span class="film-yr">1927</span>
+          <p class="col-body" style="margin-top:22px;">El horror se sistematiza: ya no un monstruo, sino la arquitectura de la injusticia. Fe y terror simultáneos ante la modernidad industrial.</p>
+        </div>
+        <div class="col anim-3">
+          <div class="col-rule"></div>
+          <span class="film-name" style="color:var(--paper);">M</span><span class="film-yr">1931</span>
+          <p class="col-body" style="margin-top:22px;">El expresionismo se interioriza: la deformación ya no está en la ciudad, sino en la psiquis humana y en los mecanismos del control.</p>
+        </div>
+      </div>
+      <p class="anim-4" style="font-family:'Barlow';font-size:25px;color:var(--silver);max-width:78ch;margin:auto 0 0;line-height:1.5;">La sombra es el hilo que mejor resume el arco. El expresionismo fue interrumpido por el Tercer Reich: sus creadores se exiliaron y <span class="red">sus sombras siguieron proyectándose sobre el film noir de Hollywood</span>.</p>
+      <div class="pagenum">22</div>
+    </div>
+  </section><section data-label="Lo Unheimlich">
+    <div class="slide dark" style="display:grid;grid-template-columns:1.12fr 0.88fr;">
+      <div style="padding:92px 84px 92px 110px;display:flex;flex-direction:column;justify-content:center;">
+        <p class="kicker anim" style="color:var(--smoke);">Marco teórico · Sigmund Freud · 1919</p>
+        <h2 class="headline anim" style="font-size:108px;margin:16px 0 14px;color:var(--paper);">Unheimlich</h2>
+        <p class="film-yr anim" style="margin:0 0 34px;font-size:21px;color:var(--smoke);">Lo ominoso · lo siniestro · <span style="font-style:italic;">the uncanny</span></p>
+        <p class="anim-2" style="font-family:'Barlow';font-size:27px;line-height:1.5;color:var(--silver);max-width:46ch;margin:0;">No el miedo a lo desconocido, sino el desasosiego de lo <span class="red">familiar vuelto extraño</span>: el hogar, el rostro, el cuerpo, atravesados por algo que debería haber permanecido oculto y, sin embargo, sale a la luz.</p>
+        <p class="anim-3" style="font-family:'Barlow';font-size:21px;line-height:1.55;color:var(--smoke);max-width:50ch;margin:30px 0 0;">En alemán, <em style="font-style:italic;">heimlich</em> significa a la vez «íntimo, hogareño» y «secreto, escondido». Su negación, <em style="font-style:italic;">un-heimlich</em>, nombra el instante en que lo propio se revela ajeno: el retorno de lo reprimido. Es el motor secreto del expresionismo —la sombra y la distorsión que tornan siniestro lo cotidiano.</p>
+      </div>
+      <div style="padding:92px 110px 92px 0;display:flex;flex-direction:column;justify-content:center;">
+        <p class="col-lead anim-2" style="color:var(--paper);margin:0 0 22px;">Cómo opera en las tres películas</p>
+        <div class="anim-3">
+          <div style="padding:26px 0;border-top:1px solid var(--line-dark);">
+            <p style="font-family:'Barlow Condensed';font-weight:600;text-transform:uppercase;letter-spacing:0.18em;font-size:18px;color:var(--smoke);margin:0 0 12px;">El muerto que retorna</p>
+            <p style="font-family:'Barlow';font-size:23px;line-height:1.45;color:var(--silver);margin:0;"><em style="font-style:italic;color:var(--paper);">Nosferatu</em> — la peste y el cadáver que cruzan el umbral del hogar burgués.</p>
+          </div>
+          <div style="padding:26px 0;border-top:1px solid var(--line-dark);">
+            <p style="font-family:'Barlow Condensed';font-weight:600;text-transform:uppercase;letter-spacing:0.18em;font-size:18px;color:var(--smoke);margin:0 0 12px;">El doble autómata</p>
+            <p style="font-family:'Barlow';font-size:23px;line-height:1.45;color:var(--silver);margin:0;"><em style="font-style:italic;color:var(--paper);">Metrópolis</em> — el robot con el rostro de María: lo inanimado que imita la vida.</p>
+          </div>
+          <div style="padding:26px 0;border-top:1px solid var(--line-dark);border-bottom:1px solid var(--line-dark);">
+            <p style="font-family:'Barlow Condensed';font-weight:600;text-transform:uppercase;letter-spacing:0.18em;font-size:18px;color:var(--smoke);margin:0 0 12px;">Lo familiar monstruoso</p>
+            <p style="font-family:'Barlow';font-size:23px;line-height:1.45;color:var(--silver);margin:0;"><em style="font-style:italic;color:var(--paper);">M</em> — el vecino corriente habitado por un impulso atroz.</p>
+          </div>
+        </div>
+      </div>
+      <div class="pagenum">05</div>
+    </div>
+  </section>
+
+  <!-- ============ 24 · FIN + FUENTES ============ -->
+  <section data-label="Fin" data-deck-last-visible="">
+    <div class="slide dark" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;">
+      <div class="perf" style="position:absolute;top:0;left:0;right:0;"></div>
+      <div class="perf" style="position:absolute;bottom:0;left:0;right:0;"></div>
+      <h2 class="display anim" style="font-size:150px;color:var(--paper);text-align:center;transform:scaleX(0.92);transform-origin:center;">Fin</h2>
+      <p class="label anim-2" style="color:var(--silver);margin-top:22px;letter-spacing:0.5em;">Expresionismo Alemán · TP 1</p>
+      <div class="anim-2" style="margin-top:54px;max-width:60ch;">
+        <p class="kicker" style="color:var(--smoke);font-size:17px;margin-bottom:16px;">Fuentes teóricas</p>
+        <p style="font-family:'Barlow';font-size:19px;line-height:1.7;color:var(--silver);margin:0;">Kracauer, S. — <em style="font-style:italic;">De Caligari a Hitler</em> &nbsp;·&nbsp; Eisner, L. H. — <em style="font-style:italic;">La pantalla demoníaca</em> &nbsp;·&nbsp; Mitry, J. — <em style="font-style:italic;">Historia del cine experimental</em> &nbsp;·&nbsp; Zubiaur Carreño, F. — <em style="font-style:italic;">El Expresionismo alemán</em></p>
+      </div>
+    </div>
+  </section>
+
+</deck-stage>
+
+<script src="image-slot.js"></script>
+<script src="deck-stage.js"></script>
+
+
+</body></html>
